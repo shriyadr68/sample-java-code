@@ -1,0 +1,63 @@
+
+pipeline {
+    agent any
+
+    environment {
+        WAR_SOURCE = 'sample-java-code/java-web-app/target/java-web-app-1.0-SNAPSHOT.war'
+        WAR_DEST = 'sample-java-code/java-web-app/ROOT.war'
+        DOCKER_IMAGE = 'java-web-app'
+        DOCKER_BUILD_DIR = 'sample-java-code/java-web-app'
+    }
+
+    stages {
+        stage('Build WAR') {
+            steps {
+                dir('sample-java-code/java-web-app') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Prepare WAR for Docker') {
+            steps {
+                echo 'Renaming WAR file to ROOT.war...'
+                sh "cp ${WAR_SOURCE} ${WAR_DEST}"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image...'
+                dir("${DOCKER_BUILD_DIR}") {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                echo 'Running Docker container...'
+                sh "docker run -d -p 8081:8080 ${DOCKER_IMAGE}"
+            }
+        }
+
+        stage('Docker Push') {
+            when {
+                expression { return currentBuild.currentResult == 'SUCCESS' }
+            }
+            steps {
+                echo 'Docker image ready to be pushed (add credentials and registry info if needed).'
+                // Example: sh "docker push your-registry/${DOCKER_IMAGE}"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Deployment successful!'
+        }
+        failure {
+            echo '❌ Build or deployment failed.'
+        }
+    }
+}
