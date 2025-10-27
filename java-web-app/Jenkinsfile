@@ -1,7 +1,5 @@
-
 pipeline {
     agent any
-
     environment {
         WAR_SOURCE = 'sample-java-code/java-web-app/target/java-web-app-1.0-SNAPSHOT.war'
         WAR_DEST = 'sample-java-code/java-web-app/ROOT.war'
@@ -10,6 +8,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build WAR') {
             steps {
                 dir('sample-java-code/java-web-app') {
