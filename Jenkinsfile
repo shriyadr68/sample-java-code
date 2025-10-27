@@ -9,6 +9,13 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                sh 'ls -la sample-java-code/java-web-app' // Debug: check if pom.xml is present
+            }
+        }
+
         stage('Build WAR') {
             steps {
                 dir('sample-java-code/java-web-app') {
@@ -19,14 +26,12 @@ pipeline {
 
         stage('Prepare WAR for Docker') {
             steps {
-                echo 'Renaming WAR file to ROOT.war...'
                 sh "cp ${WAR_SOURCE} ${WAR_DEST}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
                 dir("${DOCKER_BUILD_DIR}") {
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
@@ -35,7 +40,6 @@ pipeline {
 
         stage('Run Docker Container') {
             steps {
-                echo 'Running Docker container...'
                 sh "docker run -d -p 8081:8080 ${DOCKER_IMAGE}"
             }
         }
@@ -45,8 +49,7 @@ pipeline {
                 expression { return currentBuild.currentResult == 'SUCCESS' }
             }
             steps {
-                echo 'Docker image ready to be pushed (add credentials and registry info if needed).'
-                // Example: sh "docker push your-registry/${DOCKER_IMAGE}"
+                echo 'Docker image ready to be pushed.'
             }
         }
     }
