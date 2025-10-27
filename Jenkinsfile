@@ -2,23 +2,23 @@ pipeline {
     agent any
 
     environment {
-        WAR_SOURCE = 'sample-java-code/java-web-app/target/java-web-app-1.0-SNAPSHOT.war'
-        WAR_DEST = 'sample-java-code/java-web-app/ROOT.war'
+        WAR_SOURCE = 'java-web-app/target/java-web-app-1.0-SNAPSHOT.war'
+        WAR_DEST = 'java-web-app/ROOT.war'
         DOCKER_IMAGE = 'java-web-app'
-        DOCKER_BUILD_DIR = 'sample-java-code/java-web-app'
+        DOCKER_BUILD_DIR = 'java-web-app'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'ls -la sample-java-code/java-web-app' // Debug: check if pom.xml is present
+                sh 'ls -la java-web-app' // Debug: confirm pom.xml is present
             }
         }
 
         stage('Build WAR') {
             steps {
-                dir('sample-java-code/java-web-app') {
+                dir('java-web-app') {
                     sh 'mvn clean package'
                 }
             }
